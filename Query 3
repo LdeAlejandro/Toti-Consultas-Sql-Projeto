@@ -1,0 +1,177 @@
+SELECT 
+	client.id AS 'ID do cliente', 
+	client.nome AS 'Nome do cliente', 
+	client_account.id_conta AS 'ID  Da Conta do cliente', 
+
+--total depositos
+ROUND(SUM(
+    CASE 
+        WHEN transaction_type.descricao = 'depósito' 
+        THEN trsctn.valor
+        ELSE 0
+    END
+)) AS "Total Depositos",
+
+--total debito
+ROUND(SUM(
+    CASE 
+        WHEN transaction_type.descricao != 'depósito' 
+        THEN trsctn.valor
+        ELSE 0
+    END
+)) AS "Total de Debitos",
+
+--total saldo
+
+ROUND((SUM(
+    CASE 
+        WHEN transaction_type.descricao = 'depósito' 
+        THEN trsctn.valor
+        ELSE 0
+    END
+)) -
+
+(SUM(
+    CASE 
+        WHEN transaction_type.descricao != 'depósito' 
+        THEN trsctn.valor
+        ELSE 0
+    END
+))) AS "Saldo calculado"
+
+FROM 
+	tipo_transacao AS transaction_type
+    
+JOIN
+	
+    transacao AS trsctn
+ON
+
+transaction_type.id = trsctn.id_tipo_transacao
+
+JOIN
+	cliente_conta AS client_account
+    
+ON 
+	trsctn.id_cliente_conta = client_account.id
+
+JOIN
+	cliente as client
+ON
+	client_account.id_cliente = client.id
+    
+GROUP BY client_account.id;
+
+
+-- Update the `saldo` field in the `conta` table based on computed balance
+UPDATE conta
+SET saldo = (
+    -- Subquery para calcular saldo
+    SELECT 
+        ROUND(SUM(
+            CASE 
+                WHEN transaction_type.descricao = 'depósito' 
+                THEN trsctn.valor
+                ELSE 0
+            END
+        ) -
+        SUM(
+            CASE 
+                WHEN transaction_type.descricao != 'depósito' 
+                THEN trsctn.valor
+                ELSE 0
+            END
+        )) AS total_balance
+    FROM 
+        tipo_transacao AS transaction_type
+    JOIN
+        transacao AS trsctn ON transaction_type.id = trsctn.id_tipo_transacao
+    JOIN
+        cliente_conta AS client_account ON trsctn.id_cliente_conta = client_account.id
+    WHERE
+        client_account.id_conta = conta.id
+    GROUP BY client_account.id_conta
+)
+WHERE EXISTS (
+    -- Ensure we only update rows where a corresponding balance calculation exists
+    SELECT 1
+    FROM tipo_transacao AS transaction_type
+    JOIN transacao AS trsctn ON transaction_type.id = trsctn.id_tipo_transacao
+    JOIN cliente_conta AS client_account ON trsctn.id_cliente_conta = client_account.id
+    WHERE client_account.id_conta = conta.id
+);
+
+
+---check update value
+SELECT 
+	client.id AS 'ID do cliente', 
+	client.nome AS 'Nome do cliente', 
+	client_account.id_conta AS 'ID  Da Conta do cliente', 
+
+--total depositos
+ROUND(SUM(
+    CASE 
+        WHEN transaction_type.descricao = 'depósito' 
+        THEN trsctn.valor
+        ELSE 0
+    END
+)) AS "Total Depositos",
+
+--total debito
+ROUND(SUM(
+    CASE 
+        WHEN transaction_type.descricao != 'depósito' 
+        THEN trsctn.valor
+        ELSE 0
+    END
+)) AS "Total de Debitos",
+
+--total saldo
+
+ROUND((SUM(
+    CASE 
+        WHEN transaction_type.descricao = 'depósito' 
+        THEN trsctn.valor
+        ELSE 0
+    END
+)) -
+
+(SUM(
+    CASE 
+        WHEN transaction_type.descricao != 'depósito' 
+        THEN trsctn.valor
+        ELSE 0
+    END
+))) AS "Total de Saldo",
+
+account.saldo AS "Saldo Atualizado"
+
+
+FROM 
+	tipo_transacao AS transaction_type
+    
+JOIN
+	
+    transacao AS trsctn
+ON
+
+transaction_type.id = trsctn.id_tipo_transacao
+
+JOIN
+	cliente_conta AS client_account
+    
+ON 
+	trsctn.id_cliente_conta = client_account.id
+
+JOIN
+	cliente AS client
+ON
+	client_account.id_cliente = client.id
+JOIN
+	conta AS account
+ON
+	client_account.id_conta = account.id
+    
+GROUP BY client_account.id;
+
+
