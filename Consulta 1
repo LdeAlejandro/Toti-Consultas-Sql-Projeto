@@ -1,0 +1,28 @@
+SELECT 
+	cliente_principal.id AS 'ID Cliente Principal',
+    cliente_principal.nome As 'Cliente Principal',
+    dependente_conta.id_conta AS 'Cliente Conta Principal',
+    dependente_conta.id_cliente AS 'ID Cliente Dependente', 
+    cliente_dependente.nome AS 'Nome dependente',
+    conta.id AS 'ID Conta Dependente'
+    
+    
+FROM 
+	cliente_conta AS dependente_conta
+
+JOIN
+	cliente as cliente_dependente
+ON
+	dependente_conta.id_cliente = cliente_dependente.id
+    
+JOIN 
+	cliente_conta AS conta 
+ON
+	dependente_conta.id_conta = conta.id
+    
+JOIN 
+	cliente as cliente_principal
+ON
+    conta.id_cliente = cliente_principal.id
+    
+WHERE dependente_conta.dependente = true
