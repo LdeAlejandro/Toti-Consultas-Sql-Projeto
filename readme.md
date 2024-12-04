@@ -13,3 +13,8 @@ efetuadas.
 ○ Queremos saber qual saldo total das contas registradas em banco!
 ■ Reparem que temos alguns tipos de transações que subtraem dinheiro e outros que
 somam.
+
+Test queries:
+1. https://www.db-fiddle.com/f/xAdFbXimW3z9KGBokL1svY/0
+2. https://www.db-fiddle.com/f/qV6HacoRRFx8ESJdj1avRC/0
+3. https://www.db-fiddle.com/f/5Hc5KL3v97eafF89jVxJAb/1
